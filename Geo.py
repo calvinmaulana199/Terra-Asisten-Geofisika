@@ -201,9 +201,9 @@ with col_chat:
                     
                     genai.configure(api_key=api_key)
                     
-                    # Menggunakan nama model standar resmi yang stabil untuk versi 3.5 / model flash terbaru
+                    # Menggunakan model produksi terbaru gemini-3.5-flash
                     model = genai.GenerativeModel(
-                        model_name='gemini-2.5-flash',
+                        model_name='gemini-3.5-flash',
                         system_instruction=instruksi_terra
                     )
                     
