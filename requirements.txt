@@ -1,6 +1,9 @@
 streamlit
 pandas
 numpy
-pillow
 openpyxl
+pillow
+lasio
+folium
+streamlit-folium
 google-generativeai
