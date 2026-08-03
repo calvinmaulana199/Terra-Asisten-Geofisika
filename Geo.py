@@ -7,7 +7,7 @@ import os
 from PIL import Image
 import google.generativeai as genai
 
-# Coba import library geofisika khusus (lasio & folium) jika tersedia
+# Coba import library geofisika khusus jika tersedia
 try:
     import lasio
     HAS_LASIO = True
@@ -32,7 +32,6 @@ st.set_page_config(
 
 st.markdown("""
     <style>
-    /* Global Dark Theme Geophysics */
     .stApp {
         background-color: #0b0f19;
         color: #e2e8f0;
@@ -49,14 +48,10 @@ st.markdown("""
     }
     .header-box h1 { margin: 0; font-size: 1.7rem; font-weight: 700; color: #38bdf8; }
     .header-box p { margin: 5px 0 0 0; opacity: 0.85; font-size: 0.9rem; color: #94a3b8; }
-    
-    /* Sidebar Styling */
     [data-testid="stSidebar"] {
         background-color: #0f172a;
         border-right: 1px solid #1e293b;
     }
-    
-    /* Tombol Kustom */
     .stButton>button {
         width: 100%;
         background-color: #0891b2;
@@ -70,23 +65,13 @@ st.markdown("""
         background-color: #0e7490;
         border: 1px solid #38bdf8;
     }
-    
-    /* Card & Container Widget */
-    .workspace-card {
-        background-color: #111827;
-        padding: 15px;
-        border-radius: 10px;
-        border: 1px solid #1f2937;
-        margin-bottom: 15px;
-    }
     </style>
 """, unsafe_allow_html=True)
 
-# Header Utama
 st.markdown("""
     <div class="header-box">
         <h1>🌍 Terra Omni-Pro: Advanced Geophysics & Energy Workstation</h1>
-        <p>AI Cerdas Berbasis Gemini 1.5 Flash dengan Parser SEG-Y/LAS, Split-Screen GIS, Interactive Sandbox, & Memory Bank.</p>
+        <p>AI Cerdas Berbasis Gemini Terbaru dengan Parser SEG-Y/LAS, Split-Screen GIS, Interactive Sandbox, & Memory Bank.</p>
     </div>
 """, unsafe_allow_html=True)
 
@@ -95,7 +80,7 @@ st.markdown("""
 # ==========================================
 instruksi_terra = """
 Kamu adalah Terra, asisten AI pribadi yang ramah, hangat, sangat cerdas, dan suportif. 
-Kamu memiliki keahlian tingkat lanjut di bidang Teknik Geofisika, Petrofisika, Eksplorasi Migas/Panas Bumi, Sains, serta Pemrograman (Python, NumPy, Matplotlib, ObsPy, SeisPy).
+Kamu memiliki keahlian tingkat lanjut di bidang Teknik Geofisika, Petrofisika, Eksplorasi Migas/Panas Bumi, Sains, serta Pemrograman (Python, NumPy, Matplotlib).
 
 Gaya Berinteraksi:
 - Sangat ramah, antusias, dan menyambut pengguna dengan hangat layaknya rekan peneliti senior.
@@ -110,8 +95,6 @@ if "messages" not in st.session_state:
     st.session_state.messages = []
 if "memory_bank" not in st.session_state:
     st.session_state.memory_bank = []
-if "split_mode" not in st.session_state:
-    st.session_state.split_mode = True
 
 # ==========================================
 # 4. SIDEBAR KONTROL & PARSER GEOSAIN
@@ -121,7 +104,6 @@ api_key = st.secrets.get("GEMINI_API_KEY", "")
 with st.sidebar:
     st.header("📂 Data & Parser Geofisika")
     
-    # Upload File Khusus Geofisika & Umum (.las, .segy, .csv, dll)
     uploaded_gefiles = st.file_uploader(
         "Upload Data (LAS, SEG-Y/SGY, CSV, TXT)", 
         type=["las", "segy", "sgy", "csv", "txt", "xlsx"],
@@ -138,13 +120,13 @@ with st.sidebar:
                 if file_extension == 'las' and HAS_LASIO:
                     bytes_data = file.read()
                     las = lasio.read(io.BytesIO(bytes_data).decode('utf-8', errors='ignore'))
-                    st.success(ankan_msg := f"Berhasil Parse Log Sumur: {file.name}")
+                    st.success(f"Berhasil Parse Log Sumur: {file.name}")
                     df_las = las.df().reset_index()
                     konteks_file += f"\n\n[DATA LOG SUMUR LAS '{file.name}':\nSumur: {las.well.WELL.value}, Kurva: {las.curves.keys()}\nPreview:\n{df_las.head(5).to_string()}]"
                     parsed_data_cache = df_las
                 elif file_extension in ['segy', 'sgy']:
-                    st.info(f"File Seismik SEG-Y terdeteksi: {file.name}. Memuat metadata biner...")
-                    konteks_file += f"\n\n[DATA SEISMIK SEG-Y '{file.name}' terdeteksi di workspace pengguna.]"
+                    st.info(f"File Seismik SEG-Y terdeteksi: {file.name}")
+                    konteks_file += f"\n\n[DATA SEISMIK SEG-Y '{file.name}' terdeteksi di workspace.]"
                 elif file_extension in ['csv', 'txt']:
                     df_temp = pd.read_csv(file)
                     st.success(f"Memuat CSV: {file.name}")
@@ -159,7 +141,7 @@ with st.sidebar:
     if st.button("Tambah ke Memory Bank"):
         if memo_input:
             st.session_state.memory_bank.append(memo_input)
-            st.success("Tersimpan ke Memory Bank!")
+            st.success("Tersimpan!")
     
     if st.session_state.memory_bank:
         with st.expander("Lihat Catatan Tersimpan", expanded=False):
@@ -183,31 +165,27 @@ with st.sidebar:
         n = st.number_input("Eksponen Saturasi (n)", value=2.0)
         m = st.number_input("Faktor Sementasi (m)", value=2.0)
         if st.button("Hitung Saturasi ($Sw$)"):
-            # Sw^n = (a * Rw) / (phi^m * Rt) (asumsi a=1)
             sw = ((1.0 * rw) / ((phi ** m) * rt)) ** (1.0 / n)
             st.success(f"Saturasi Air ($Sw$): **{sw*100:.2f}%**")
 
     st.divider()
-    st.markdown("⚙️ **Model Engine:** Gemini 1.5 Flash (Stabil)")
+    st.markdown("⚙️ **Model Engine:** Gemini 3.5 Flash")
     if st.button("🗑️ Bersihkan Riwayat Obrolan"):
         st.session_state.messages = []
         st.rerun()
 
 # ==========================================
-# 5. LAYOUT SPLIT-SCREEN (MODE LAYAR BELAH)
+# 5. LAYOUT SPLIT-SCREEN
 # ==========================================
-# Menggunakan 2 Kolom: Kiri untuk Chat, Kanan untuk Ruang Visualisasi/Workspace
 col_chat, col_workspace = st.columns([1.1, 0.9], gap="medium")
 
 with col_chat:
     st.subheader("💬 Sesi Diskusi Bersama Terra")
     
-    # Render Riwayat Chat
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
-    # Input Chat Utama
     if prompt := st.chat_input("Tanya teori geofisika, analisis log, atau minta buatkan kode Python..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
@@ -222,8 +200,10 @@ with col_chat:
                     os.environ.pop("GOOGLE_API_KEY", None)
                     
                     genai.configure(api_key=api_key)
+                    
+                    # Menggunakan nama model standar resmi yang stabil untuk versi 3.5 / model flash terbaru
                     model = genai.GenerativeModel(
-                        model_name='gemini-1.5-flash',
+                        model_name='gemini-2.5-flash',
                         system_instruction=instruksi_terra
                     )
                     
@@ -241,7 +221,7 @@ with col_chat:
                 except Exception as e:
                     error_msg = str(e)
                     if "429" in error_msg or "Quota exceeded" in error_msg:
-                        st.error("⚠️ Batas kuota harian API Key tercapai (Error 429). Silakan gunakan API Key baru.")
+                        st.error("⚠️ Batas kuota harian API Key tercapai (Error 429).")
                     else:
                         st.error(f"Terjadi kesalahan sistem: {error_msg}")
 
@@ -254,8 +234,6 @@ with col_workspace:
         st.markdown("##### Pratinjau & Analisis Interaktif")
         if parsed_data_cache is not None:
             st.dataframe(parsed_data_cache, use_container_width=True)
-            
-            # Pilihan Plot Cepat jika kolom mencukupi
             cols = parsed_data_cache.columns.tolist()
             if len(cols) >= 2:
                 st.markdown("---")
@@ -279,27 +257,24 @@ with col_workspace:
                 except Exception as ex:
                     st.warning(f"Gagal merender plot: {ex}")
         else:
-            st.info("💡 Belum ada file data (.las, .csv, .txt) yang di-upload melalui sidebar. Upload file untuk melihat visualisasinya di sini.")
+            st.info("💡 Belum ada file data (.las, .csv, .txt) yang di-upload melalui sidebar.")
 
     with tab_map:
         st.markdown("##### Integrasi Peta Anomali & Koordinat")
         if HAS_FOLIUM:
-            # Peta default di wilayah eksplorasi / Indonesia
             m = folium.Map(location=[-0.7893, 113.9213], zoom_start=5, tiles="CartoDB dark_matter")
-            # Tambahkan marker contoh titik sumur eksplorasi
             folium.Marker(
                 [-2.5, 115.0], 
-                popup="Sumur Eksplorasi A-1 (Anomali Subsurface)", 
+                popup="Sumur Eksplorasi A-1", 
                 icon=folium.Icon(color="cyan", icon="info-sign")
             ).add_to(m)
             st_folium(m, width=450, height=350)
         else:
-            st.warning("Modul `streamlit-folium` belum terpasang. Jalankan `pip install streamlit-folium folium` untuk mengaktifkan peta interaktif.")
+            st.warning("Modul `streamlit-folium` belum terpasang di requirements.")
 
     with tab_sandbox:
         st.markdown("##### Python Sandbox (NumPy / Matplotlib)")
-        default_code = "import numpy as np\nimport matplotlib.pyplot as plt\n\n# Simulasi Gelombang Seismik Ricker Wavelet\nt = np.linspace(-0.1, 0.1, 200)\nf = 30 # frekuensi 30 Hz\nwavelet = (1 - 2*(np.pi*f*t)**2) * np.exp(-(np.pi*f*t)**2)\n\nprint('Panjang sinyal wavelet:', len(wavelet))"
-        
+        default_code = "import numpy as np\nimport matplotlib.pyplot as plt\n\nt = np.linspace(-0.1, 0.1, 200)\nf = 30\nwavelet = (1 - 2*(np.pi*f*t)**2) * np.exp(-(np.pi*f*t)**2)\nprint('Panjang sinyal wavelet:', len(wavelet))"
         user_code = st.text_area("Tulis kode Python di sini:", value=default_code, height=180)
         
         if st.button("🚀 Jalankan Kode di Sandbox"):
@@ -314,6 +289,10 @@ with col_workspace:
                 output_result = f"Error Eksekusi: {e}"
                 exec_success = False
             sys.stdout = old_stdout
+            
+            st.text_area("Console Output:", value=output_result, height=120)
+            if exec_success:
+                st.success("Kode berhasil dieksekusi!")
             
             st.text_area("Console Output:", value=output_result, height=120)
             if exec_success:
