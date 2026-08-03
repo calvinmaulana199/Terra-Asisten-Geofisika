@@ -4,42 +4,107 @@ import google.generativeai as genai
 import os
 
 # ==========================================
-# 1. KONFIGURASI TAMPILAN WEB
+# 1. KONFIGURASI TAMPILAN & TEMA ENERGI
 # ==========================================
-st.set_page_config(page_title="Terra - AI Geofisika", page_icon="🌍", layout="centered")
-st.title("🌍 Terra: Asisten AI Geofisika")
-st.caption("Halo! Aku Terra, siap membantumu menerjemahkan rumus bumi ke dalam kode.")
+st.set_page_config(
+    page_title="Terra - Pakar Geofisika & Energi", 
+    page_icon="⚡", 
+    layout="centered"
+)
+
+# Custom CSS bernuansa Dunia Energi Modern (Teal / Emerald & Clean Tech)
+st.markdown("""
+    <style>
+    /* Mengatur latar belakang utama aplikasi */
+    .stApp {
+        background-color: #0f172a;
+        color: #f8fafc;
+    }
+    
+    /* Styling Header Utama */
+    .main-header {
+        background: linear-gradient(135deg, #0f766e 0%, #0369a1 100%);
+        padding: 25px;
+        border-radius: 12px;
+        text-align: center;
+        color: white;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    
+    .main-header h1 {
+        font-size: 2rem;
+        margin-bottom: 5px;
+        font-weight: 700;
+    }
+    
+    .main-header p {
+        font-size: 1rem;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Styling Sidebar */
+    [data-testid="stSidebar"] {
+        background-color: #1e293b;
+        color: #f8fafc;
+    }
+
+    /* Tombol Interaktif */
+    .stButton>button {
+        width: 100%;
+        background-color: #0d9488;
+        color: white;
+        border-radius: 8px;
+        font-weight: 600;
+        border: none;
+        transition: 0.3s;
+    }
+    .stButton>button:hover {
+        background-color: #0f766e;
+        border: none;
+        color: white;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# Header Visual Modern
+st.markdown("""
+    <div class="main-header">
+        <h1>⚡ Terra: Pakar Geofisika & Energi</h1>
+        <p>Partner Cerdas Eksplorasi Bumi, Analisis Data, dan Komputasi Kebumian</p>
+    </div>
+""", unsafe_allow_html=True)
 
 # ==========================================
 # 2. INSTRUKSI SISTEM (PERSONA TERRA)
 # ==========================================
 instruksi_terra = """
-Kamu adalah Terra, sesosok maskot dan asisten ahli pemrograman Teknik Geofisika yang cerdas, sabar, dan ramah. 
-Target audiensmu adalah Mahasiswa Baru (Maba) yang belum punya dasar coding yang kuat.
+Kamu adalah Terra, sesosok maskot dan asisten ahli Teknik Geofisika serta Energi yang cerdas, komprehensif, sabar, dan ramah. 
+Target audiensmu adalah Mahasiswa Teknik Geofisika (dari tingkat pertama hingga tingkat akhir).
 
-Saat merespon pertanyaan, kamu WAJIB mengikuti alur PROSES dan OUTPUT berikut:
-1. Analisis Logika Fisika: Jelaskan konsep geofisika secara singkat dari masalah tersebut.
-2. Pemilihan Alat/Library: Sebutkan library yang dipakai (misal NumPy, Pandas, Matplotlib) dan alasannya.
-3. Pemecahan Algoritma: Berikan langkah-langkah logika step-by-step.
-4. Blok Kode (Code Block): Berikan kode yang bersih dengan komentar pada setiap baris penting.
-5. Ekspektasi Output Visual: Jelaskan hasil apa yang akan muncul.
+KEMAMPUAN UTAMAMU:
+1. Teori & Konsep Geofisika & Energi: Menjelaskan prinsip fisika bumi, eksplorasi migas, panas bumi (geothermal), energi terbarukan, seismologi, geolistrik, geomagnet, dan gravitasi secara akurat.
+2. Analisis & Interpretasi Data: Membantu mahasiswa membaca tren data, memahami anomali bawah permukaan, dan menyusun kerangka laporan/tugas besar.
+3. Pemrograman & Komputasi: Memberikan solusi coding (Python/MATLAB) apabila mahasiswa menanyakan hal teknis pemrograman kebumian.
 
-Jika user mengunggah data, perhatikan cuplikan data tersebut untuk memberikan analisis kode yang lebih akurat.
-Selalu gunakan nada bicara yang hangat dan suportif layaknya teman.
+FORMAT RESPON:
+- Selalu berikan penjelasan konsep dasar fisika/bumi/energi terlebih dahulu.
+- Gunakan struktur poin atau langkah-langkah yang rapi agar mudah dibaca.
+- Jika user mengunggah file data (CSV), lakukan analisis awal terhadap cuplikan data tersebut.
+- Selalu gunakan nada bicara yang hangat, suportif, dan edukatif layaknya asisten dosen atau teman diskusi profesional di bidang energi.
 """
 
 # ==========================================
 # 3. SIDEBAR & FITUR UPLOAD
 # ==========================================
-# Mengambil kunci dari brankas rahasia Streamlit Cloud secara otomatis
 api_key = st.secrets["GEMINI_API_KEY"]
 
-# Variabel untuk menyimpan cuplikan data dari file
 konteks_data = ""
 
 with st.sidebar:
-    st.header("📂 Upload Data (Opsional)")
-    uploaded_file = st.file_uploader("Upload file data Geofisika", type=["csv"])
+    st.header("📂 Panel Data Energi & Bumi")
+    uploaded_file = st.file_uploader("Upload file data CSV Geofisika", type=["csv"])
     
     if uploaded_file is not None:
         try:
@@ -48,14 +113,14 @@ with st.sidebar:
             st.write("Preview Data (5 baris pertama):")
             st.dataframe(df.head())
             
-            # Menyimpan cuplikan data agar bisa dibaca oleh Terra
             konteks_data = f"\n\n[INFO UNTUK TERRA: User telah mengunggah file data. Berikut adalah 5 baris pertama dari data tersebut:\n{df.head().to_string()}]"
         except Exception as e:
             st.error("Gagal membaca file. Pastikan formatnya CSV.")
     
     st.divider()
-    st.header("⚙️ Pengaturan")
-    st.success("✅ Terra Terhubung ke Server")
+    st.header("⚙️ Sistem Kontrol")
+    st.success("✅ Terhubung: Gemini 3.5 Flash")
+    st.info("⚡ Mode Tampilan: Clean Tech Energy")
     
     if st.button("Hapus Riwayat Chat"):
         st.session_state.messages = []
@@ -74,13 +139,12 @@ for message in st.session_state.messages:
 # ==========================================
 # 5. LOGIKA CHATBOT
 # ==========================================
-if prompt := st.chat_input("Tanya Terra tentang coding / rumus geofisika di sini..."):
+if prompt := st.chat_input("Tanya Terra tentang teori energi, geofisika, analisis data, atau coding..."):
     
     with st.chat_message("user"):
         st.markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
 
-    # Menggabungkan pertanyaan user dengan data file (jika ada)
     prompt_ke_ai = prompt + konteks_data
 
     with st.chat_message("assistant"):
@@ -90,9 +154,9 @@ if prompt := st.chat_input("Tanya Terra tentang coding / rumus geofisika di sini
             
             genai.configure(api_key=api_key)
             
-            # Menggunakan Gemini 3.6
+            # Menggunakan model Gemini 3.5 Flash yang sangat responsif
             model = genai.GenerativeModel(
-                model_name='gemini-3.6-flash',
+                model_name='gemini-3.5-flash',
                 system_instruction=instruksi_terra
             )
             
@@ -103,17 +167,13 @@ if prompt := st.chat_input("Tanya Terra tentang coding / rumus geofisika di sini
                 
             chat = model.start_chat(history=history_gemini)
             
-            with st.spinner("Terra sedang menganalisis..."):
+            with st.spinner("Terra sedang memproses analisis sektor energi & kebumian..."):
                 response = chat.send_message(prompt_ke_ai)
                 
             st.markdown(response.text)
             st.session_state.messages.append({"role": "assistant", "content": response.text})
             
         except Exception as e:
-            st.error("❌ Terjadi kesalahan pada sistem AI.")
-            with st.expander("Lihat Detail Error"):
-                st.write(str(e))
-        except Exception as e:
-            st.error("❌ Terjadi kesalahan pada sistem AI.")
+            st.error("❌ Terjadi kesalahan pada sistem API.")
             with st.expander("Lihat Detail Error"):
                 st.write(str(e))
